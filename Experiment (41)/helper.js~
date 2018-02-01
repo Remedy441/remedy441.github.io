@@ -1,0 +1,115 @@
+// three.js animataed demo_line using BufferGeometry
+
+var renderer, scene, camera;
+
+var demo_line;
+var demo_MAX_POINTS = 500;
+var drawCount;
+
+init();
+animate();
+
+function init() {
+
+	// info
+	var info = document.createElement( 'div' );
+	info.style.position = 'absolute';
+	info.style.top = '30px';
+	info.style.width = '100%';
+	info.style.textAlign = 'center';
+	info.style.color = '#fff';
+	info.style.fontWeight = 'bold';
+	info.style.backgroundColor = 'transparent';
+	info.style.zIndex = '1';
+	info.style.fontFamily = 'Monospace';
+	info.innerHTML = "three.js animataed demo_line using BufferGeometry";
+	document.body.appendChild( info );
+
+	// renderer
+	renderer = new THREE.WebGLRenderer();
+	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	document.body.appendChild( renderer.domElement );
+
+	// scene
+	scene = new THREE.Scene();
+
+	// camera
+	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+	camera.position.set( 0, 0, 1000 );
+
+	// geometry
+	var demo_geometry = new THREE.BufferGeometry();
+
+	// attributes
+	var demo_positions = new Float32Array( demo_MAX_POINTS * 3 ); // 3 vertices per point
+	demo_geometry.addAttribute( 'position', new THREE.BufferAttribute( demo_positions, 3 ) );
+
+	// drawcalls
+	drawCount = 2; // draw the first 2 points, only
+	demo_geometry.setDrawRange( 0, drawCount );
+
+	// material
+	var material = new THREE.LineBasicMaterial( { color: 0xff0000, linewidth: 2 } );
+
+	// demo_line
+	demo_line = new THREE.Line( demo_geometry,  material );
+	scene.add( demo_line );
+
+	// update demo_positions
+	updatePositions();
+
+}
+
+// update demo_positions
+function updatePositions() {
+
+	var demo_positions = demo_line.geometry.attributes.position.array;
+
+	var x = y = z = index = 0;
+
+	for ( var i = 0, l = demo_MAX_POINTS; i < l; i ++ ) {
+
+		demo_positions[ index ++ ] = x;
+		demo_positions[ index ++ ] = y;
+		demo_positions[ index ++ ] = z;
+
+		x += ( Math.random() - 0.5 ) * 30;
+		y += ( Math.random() - 0.5 ) * 30;
+		z += ( Math.random() - 0.5 ) * 30;
+
+	}
+
+}
+
+// render
+function render() {
+
+	renderer.render( scene, camera );
+
+}
+
+// animate
+function animate() {
+
+	requestAnimationFrame( animate );
+
+	drawCount = ( drawCount + 1 ) % demo_MAX_POINTS;
+
+	demo_line.geometry.setDrawRange( 0, drawCount );
+
+	if ( drawCount === 0 ) {
+
+		// periodically, generate new data
+
+		updatePositions();
+
+		demo_line.geometry.attributes.position.needsUpdate = true; // required after the first render
+
+		demo_line.material.color.setHSL( Math.random(), 1, 0.5 );
+
+	}
+
+	render();
+
+}
